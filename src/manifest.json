@@ -1,0 +1,20 @@
+{
+  "manifest_version": 3,
+  "name": "BugReplay",
+  "version": "0.1.0",
+  "description": "Record bug reproduction steps as structured Markdown for AI agents and Playwright tests",
+  "permissions": ["webRequest", "storage", "activeTab", "clipboardWrite"],
+  "host_permissions": ["<all_urls>"],
+  "content_scripts": [{
+    "matches": ["<all_urls>"],
+    "js": ["content/main.ts"],
+    "run_at": "document_idle"
+  }],
+  "background": {
+    "service_worker": "background/service-worker.ts",
+    "type": "module"
+  },
+  "action": {
+    "default_popup": "popup/popup.html"
+  }
+}
