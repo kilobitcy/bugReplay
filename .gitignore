@@ -1,7 +1,9 @@
 node_modules/
+dist/
 docs/
 .DS_Store
 *.local
+*.zip
 CLAUDE.md
 .claude/
 
