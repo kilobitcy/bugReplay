@@ -12,25 +12,34 @@ describe('RecorderToolbar', () => {
   });
   afterEach(() => { container.remove(); });
 
-  it('should render record, pause, stop, and export buttons', () => {
-    expect(container.querySelector('[data-action="record"]')).not.toBeNull();
+  it('should render pause and stop buttons', () => {
     expect(container.querySelector('[data-action="pause"]')).not.toBeNull();
     expect(container.querySelector('[data-action="stop"]')).not.toBeNull();
-    expect(container.querySelector('[data-action="export"]')).not.toBeNull();
   });
 
-  it('should emit events on button click', () => {
-    const onRecord = vi.fn();
-    toolbar.on('record', onRecord);
-    (container.querySelector('[data-action="record"]') as HTMLElement).click();
-    expect(onRecord).toHaveBeenCalledOnce();
-  });
-
-  it('should emit pause event', () => {
+  it('should emit pause event on first click', () => {
     const onPause = vi.fn();
     toolbar.on('pause', onPause);
     (container.querySelector('[data-action="pause"]') as HTMLElement).click();
     expect(onPause).toHaveBeenCalledOnce();
+  });
+
+  it('should toggle to resume on second click', () => {
+    const onPause = vi.fn();
+    const onResume = vi.fn();
+    toolbar.on('pause', onPause);
+    toolbar.on('resume', onResume);
+    const pauseBtn = container.querySelector('[data-action="pause"]') as HTMLElement;
+
+    // First click: pause
+    pauseBtn.click();
+    expect(onPause).toHaveBeenCalledOnce();
+    expect(pauseBtn.textContent).toBe('\u25B6');
+
+    // Second click: resume
+    pauseBtn.click();
+    expect(onResume).toHaveBeenCalledOnce();
+    expect(pauseBtn.textContent).toBe('\u23F8');
   });
 
   it('should emit stop event', () => {
@@ -48,5 +57,14 @@ describe('RecorderToolbar', () => {
   it('should update elapsed time display', () => {
     toolbar.updateElapsedTime(65000);
     expect(container.textContent).toContain('1:05');
+  });
+
+  it('should reset pause state', () => {
+    const pauseBtn = container.querySelector('[data-action="pause"]') as HTMLElement;
+    pauseBtn.click(); // pause → shows ▶
+    expect(pauseBtn.textContent).toBe('\u25B6');
+
+    toolbar.resetPauseState();
+    expect(pauseBtn.textContent).toBe('\u23F8');
   });
 });

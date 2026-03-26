@@ -24,12 +24,11 @@ const toolbar = new RecorderToolbar(toolbarContainer);
 const indicator = new StepIndicator(indicatorContainer);
 
 function onStep(step: RecordingStep): void {
-  store.addStep(step);
   const session = store.getSession();
-  if (session) {
-    toolbar.updateStepCount(session.steps.length);
-    indicator.flash(step.index, step.action);
-  }
+  if (!session || session.status !== 'recording') return;
+  store.addStep(step);
+  toolbar.updateStepCount(session.steps.length);
+  indicator.flash(step.index, step.action);
 }
 
 function showToolbar(): void {
@@ -71,12 +70,6 @@ function startRecording(title: string): void {
   chrome.runtime.sendMessage({ type: 'START_RECORDING' }).catch(() => {});
 }
 
-toolbar.on('record', () => {
-  const title = prompt('Bug title:') ?? 'Untitled Bug';
-  showToolbar();
-  startRecording(title);
-});
-
 toolbar.on('pause', () => {
   store.pause();
   eventRecorder?.destroy();
@@ -85,7 +78,21 @@ toolbar.on('pause', () => {
   chrome.runtime.sendMessage({ type: 'PAUSE_RECORDING' }).catch(() => {});
 });
 
+toolbar.on('resume', () => {
+  store.resume();
+  eventRecorder = new EventRecorder(onStep);
+  eventRecorder.start(store.getSession()!.startedAt);
+  timeInterval = setInterval(() => {
+    const session = store.getSession();
+    if (session) {
+      toolbar.updateElapsedTime(Date.now() - session.startedAt);
+    }
+  }, 1000);
+  chrome.runtime.sendMessage({ type: 'RESUME_RECORDING' }).catch(() => {});
+});
+
 toolbar.on('stop', () => {
+  const session = store.getSession();
   store.stop();
   eventRecorder?.destroy();
   eventRecorder = null;
@@ -93,16 +100,15 @@ toolbar.on('stop', () => {
   navigationDetector = null;
   if (timeInterval) { clearInterval(timeInterval); timeInterval = null; }
   hideToolbar();
+  toolbar.resetPauseState();
   chrome.runtime.sendMessage({ type: 'STOP_RECORDING' }).catch(() => {});
-});
 
-toolbar.on('export', () => {
-  const session = store.getSession();
-  if (!session) return;
-  const md = generateMarkdown(session);
-  copyToClipboard(md);
-  // Also offer file download
-  downloadAsFile(md, `bugreplay-${session.id}.md`);
+  // Auto export if there are recorded steps
+  if (session && session.steps.length > 0) {
+    const md = generateMarkdown(session);
+    copyToClipboard(md);
+    downloadAsFile(md, `bugreplay-${session.id}.md`);
+  }
 });
 
 // --- Listen for main-world messages ---

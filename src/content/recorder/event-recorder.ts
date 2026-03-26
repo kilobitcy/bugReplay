@@ -34,6 +34,8 @@ export class EventRecorder {
     this.clickHandler = (e: MouseEvent) => {
       const target = e.target as Element;
       if (!target || !this.stepBuilder) return;
+      // Ignore clicks on BugReplay's own UI (Shadow DOM host)
+      if (target.closest('bugreplay-root') || target.tagName.toLowerCase() === 'bugreplay-root') return;
       this.inputDebouncer?.flush();
       const info = extractElementInfo(target);
       const step = this.stepBuilder.click(info);
@@ -43,6 +45,7 @@ export class EventRecorder {
     this.inputHandler = (e: Event) => {
       const target = e.target as HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement;
       if (!target || !this.inputDebouncer) return;
+      if ((target as Element).closest?.('bugreplay-root') || (target as Element).tagName?.toLowerCase() === 'bugreplay-root') return;
       this.lastInputElement = target;
       const isPassword = target instanceof HTMLInputElement && target.type === 'password';
       this.inputDebouncer.handleInput(target.value, isPassword);
@@ -51,6 +54,7 @@ export class EventRecorder {
     this.changeHandler = (e: Event) => {
       const target = e.target as HTMLSelectElement;
       if (!target || !this.stepBuilder) return;
+      if ((target as Element).closest?.('bugreplay-root') || (target as Element).tagName?.toLowerCase() === 'bugreplay-root') return;
       if (target.tagName.toLowerCase() === 'select') {
         const info = extractElementInfo(target);
         const step = this.stepBuilder.select(info, target.value);
