@@ -32,8 +32,15 @@ function onStep(step: RecordingStep): void {
   }
 }
 
-toolbar.on('record', () => {
-  const title = prompt('Bug title:') ?? 'Untitled Bug';
+function showToolbar(): void {
+  toolbarContainer.classList.add('br-visible');
+}
+
+function hideToolbar(): void {
+  toolbarContainer.classList.remove('br-visible');
+}
+
+function startRecording(title: string): void {
   store.startSession(window.location.href, title);
   stepBuilder = new StepBuilder(Date.now());
 
@@ -62,6 +69,12 @@ toolbar.on('record', () => {
 
   // Notify background (tabId resolved by service worker from sender.tab.id)
   chrome.runtime.sendMessage({ type: 'START_RECORDING' }).catch(() => {});
+}
+
+toolbar.on('record', () => {
+  const title = prompt('Bug title:') ?? 'Untitled Bug';
+  showToolbar();
+  startRecording(title);
 });
 
 toolbar.on('pause', () => {
@@ -79,6 +92,7 @@ toolbar.on('stop', () => {
   navigationDetector?.destroy();
   navigationDetector = null;
   if (timeInterval) { clearInterval(timeInterval); timeInterval = null; }
+  hideToolbar();
   chrome.runtime.sendMessage({ type: 'STOP_RECORDING' }).catch(() => {});
 });
 
@@ -122,7 +136,7 @@ window.addEventListener('message', (event) => {
   }
 });
 
-// --- Listen for network entries from background ---
+// --- Listen for messages from background / popup ---
 chrome.runtime.onMessage.addListener((message) => {
   if (message.type === 'NETWORK_ENTRY') {
     const session = store.getSession();
@@ -132,5 +146,11 @@ chrome.runtime.onMessage.addListener((message) => {
       stepIndex: session.steps.length - 1,
     };
     store.addNetworkEntry(entry);
+  }
+
+  if (message.type === 'START_FROM_POPUP') {
+    const title = prompt('Bug title:') ?? 'Untitled Bug';
+    showToolbar();
+    startRecording(title);
   }
 });

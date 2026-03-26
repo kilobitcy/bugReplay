@@ -27,6 +27,22 @@ const STYLES = `
   z-index: 2147483647;
   pointer-events: auto;
 }
+
+#bugreplay-toolbar {
+  top: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: none;
+}
+
+#bugreplay-toolbar.br-visible {
+  display: block;
+}
+
+#bugreplay-indicator {
+  top: 12px;
+  right: 12px;
+}
 `;
 
 let shadowRoot: ShadowRoot | null = null;

@@ -8,7 +8,8 @@ export type ExtensionMessage =
   | { type: 'RESUME_RECORDING'; payload?: undefined }
   | { type: 'NETWORK_ENTRY'; payload: { entry: import('./types').NetworkEntry } }
   | { type: 'GET_RECORDING_STATE'; payload?: undefined }
-  | { type: 'RECORDING_STATE'; payload: { status: import('./types').RecordingSession['status'] } };
+  | { type: 'RECORDING_STATE'; payload: { status: import('./types').RecordingSession['status'] } }
+  | { type: 'START_FROM_POPUP'; payload?: undefined };
 
 export type MainWorldMessagePayload =
   | { type: 'BR_FRAMEWORK_DETECT_RESULT'; payload: { frameworks: string[] } }

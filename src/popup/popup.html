@@ -15,10 +15,14 @@
     .actions { display: flex; gap: 4px; margin-top: 6px; }
     .actions button { font-size: 11px; padding: 2px 8px; border: 1px solid #ddd; border-radius: 4px; background: #fff; cursor: pointer; }
     .actions button:hover { background: #f0f0f0; }
+    .start-btn { display: block; width: 100%; padding: 10px; margin-bottom: 12px; background: #ef4444; color: #fff; border: none; border-radius: 6px; font-size: 14px; font-weight: 600; cursor: pointer; }
+    .start-btn:hover { background: #dc2626; }
+    .start-btn:disabled { background: #999; cursor: default; }
   </style>
 </head>
 <body>
   <h1>BugReplay Sessions</h1>
+  <button id="start-btn" class="start-btn">⏺ 开始录制</button>
   <ul id="session-list" class="session-list"></ul>
   <script type="module" src="popup.ts"></script>
 </body>

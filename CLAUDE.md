@@ -1,4 +1,7 @@
-# CLAUDE.md — BugReplay
+# BugReplay
+
+## Profile
+- Language: chinese
 
 ## Project Overview
 
@@ -17,45 +20,6 @@ BugReplay is a Chrome Extension (Manifest V3) that records bug reproduction step
 pnpm dev        # Start dev server with HMR
 pnpm build      # Production build → dist/
 pnpm test       # Run all tests (vitest)
-```
-
-## Project Structure
-
-```
-src/
-  manifest.json                    # Chrome Extension Manifest V3
-  background/
-    service-worker.ts              # Session management, message routing
-    network-capture.ts             # chrome.webRequest listener
-  popup/
-    popup.html                     # Settings & session history
-    popup.ts
-  content/
-    main.ts                        # Entry, lifecycle coordination
-    main-world.ts                  # console capture + framework detection (main world)
-    recorder/
-      event-recorder.ts            # DOM event listeners (click/input/scroll/nav)
-      step-builder.ts              # Raw event → RecordingStep
-      input-debouncer.ts           # Keystroke merging into fill actions (500ms)
-      navigation-detector.ts       # SPA + traditional navigation detection
-    store/
-      recording-store.ts           # In-memory session state
-      session-persistence.ts       # chrome.storage persistence
-    capture/
-      selector.ts                  # CSS selector generation (ported from SnapMark)
-      element-info.ts              # Element metadata extraction (ported from SnapMark)
-    ui/
-      host.ts                      # Shadow DOM host container
-      recorder-toolbar.ts          # Record/Pause/Stop/Export buttons
-      step-indicator.ts            # Live step counter
-    export/
-      markdown.ts                  # Markdown output generation
-      playwright.ts                # Playwright test script generation
-      clipboard.ts                 # Clipboard copy + .md file download
-  shared/
-    types.ts                       # Data model definitions
-    messaging.ts                   # Chrome message types and utilities
-    constants.ts                   # Action types, debounce params
 ```
 
 ## Architecture Notes
@@ -96,3 +60,6 @@ Source project: `/data/bak20250527/agentation/`
 - TypeScript strict mode — no `any` unless absolutely necessary
 - Vite root is `src/` — paths in vite.config.ts are relative to `src/`
 - Build output goes to `dist/` (gitignored)
+
+## github info
+- repo url：https://github.com/kilobitcy/bugReplay.git

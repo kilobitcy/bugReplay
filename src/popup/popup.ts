@@ -1,6 +1,16 @@
 import { listSessions, deleteSession, loadSession } from '../content/store/session-persistence';
 import { generateMarkdown } from '../content/export/markdown';
 
+// --- Start Recording button ---
+const startBtn = document.getElementById('start-btn') as HTMLButtonElement;
+
+startBtn.addEventListener('click', async () => {
+  const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+  if (!tab?.id) return;
+  await chrome.tabs.sendMessage(tab.id, { type: 'START_FROM_POPUP' });
+  window.close();
+});
+
 async function render(): Promise<void> {
   const list = document.getElementById('session-list')!;
   const sessions = await listSessions();
