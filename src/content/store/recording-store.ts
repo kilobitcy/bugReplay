@@ -1,11 +1,22 @@
 import type { RecordingSession, RecordingStep, NetworkEntry, ConsoleEntry } from '../../shared/types';
 
+function generateId(): string {
+  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+    try { return crypto.randomUUID(); } catch { /* non-secure context */ }
+  }
+  // Fallback for non-secure contexts (e.g. HTTP on LAN IP)
+  const buf = new Uint8Array(16);
+  crypto.getRandomValues(buf);
+  const hex = Array.from(buf, b => b.toString(16).padStart(2, '0')).join('');
+  return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}`;
+}
+
 export class RecordingStore {
   private session: RecordingSession | null = null;
 
   startSession(url: string, title: string): void {
     this.session = {
-      id: crypto.randomUUID(),
+      id: generateId(),
       title,
       startedAt: Date.now(),
       url,
