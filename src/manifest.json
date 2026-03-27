@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "BugReplay",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "Record bug reproduction steps as structured Markdown for AI agents and Playwright tests",
   "permissions": ["webRequest", "storage", "activeTab", "clipboardWrite"],
   "host_permissions": ["<all_urls>"],

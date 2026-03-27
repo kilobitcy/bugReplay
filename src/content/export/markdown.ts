@@ -52,6 +52,12 @@ export function generateMarkdown(session: RecordingSession): string {
   lines.push(`**Browser:** ${session.browserInfo.name} ${session.browserInfo.version}`);
   lines.push(`**Viewport:** ${session.viewport.width}x${session.viewport.height}`);
 
+  if (session.description) {
+    lines.push('');
+    lines.push('## Description');
+    lines.push(session.description);
+  }
+
   if (session.framework) {
     lines.push('');
     lines.push('## Environment');

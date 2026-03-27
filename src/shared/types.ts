@@ -53,6 +53,7 @@ export interface ConsoleEntry {
 export interface RecordingSession {
   id: string;
   title: string;
+  description?: string;
   startedAt: number;
   url: string;
   browserInfo: { name: string; version: string; userAgent: string };

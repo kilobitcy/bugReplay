@@ -7,6 +7,7 @@ import { RecordingStore } from './store/recording-store';
 import { StepBuilder } from './recorder/step-builder';
 import { generateMarkdown } from './export/markdown';
 import { copyToClipboard, downloadAsFile } from './export/clipboard';
+import { BugDescriptionDialog } from './ui/bug-dialog';
 import type { RecordingStep, ConsoleEntry, NetworkEntry } from '../shared/types';
 import { isMainWorldMessage } from '../shared/messaging';
 
@@ -22,6 +23,7 @@ const toolbarContainer = shadow.querySelector('#bugreplay-toolbar') as HTMLEleme
 const indicatorContainer = shadow.querySelector('#bugreplay-indicator') as HTMLElement;
 const toolbar = new RecorderToolbar(toolbarContainer);
 const indicator = new StepIndicator(indicatorContainer);
+const bugDialog = new BugDescriptionDialog(shadow);
 
 function onStep(step: RecordingStep): void {
   const session = store.getSession();
@@ -103,11 +105,19 @@ toolbar.on('stop', () => {
   toolbar.resetPauseState();
   chrome.runtime.sendMessage({ type: 'STOP_RECORDING' }).catch(() => {});
 
-  // Auto export if there are recorded steps
   if (session && session.steps.length > 0) {
-    const md = generateMarkdown(session);
-    copyToClipboard(md);
-    downloadAsFile(md, `bugreplay-${session.id}.md`);
+    const defaultTitle = session.title || 'Untitled Bug';
+    bugDialog.show(defaultTitle).then((result) => {
+      if (!result) return; // User cancelled
+      session.title = result.title;
+      if (result.description) {
+        session.description = result.description;
+      }
+      const md = generateMarkdown(session);
+      copyToClipboard(md);
+      const safeName = result.title.replace(/[<>:"/\\|?*]/g, '_').trim() || 'bugreplay';
+      downloadAsFile(md, `${safeName}.md`);
+    });
   }
 });
 
@@ -143,20 +153,25 @@ window.addEventListener('message', (event) => {
 });
 
 // --- Listen for messages from background / popup ---
-chrome.runtime.onMessage.addListener((message) => {
-  if (message.type === 'NETWORK_ENTRY') {
-    const session = store.getSession();
-    if (!session) return;
-    const entry: NetworkEntry = {
-      ...message.payload.entry,
-      stepIndex: session.steps.length - 1,
-    };
-    store.addNetworkEntry(entry);
-  }
-
-  if (message.type === 'START_FROM_POPUP') {
-    const title = prompt('Bug title:') ?? 'Untitled Bug';
-    showToolbar();
-    startRecording(title);
+chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
+  switch (message.type) {
+    case 'NETWORK_ENTRY': {
+      const session = store.getSession();
+      if (session) {
+        const entry: NetworkEntry = {
+          ...message.payload.entry,
+          stepIndex: session.steps.length - 1,
+        };
+        store.addNetworkEntry(entry);
+      }
+      break;
+    }
+    case 'START_FROM_POPUP': {
+      const title = document.title || window.location.hostname || 'Untitled Bug';
+      showToolbar();
+      startRecording(title);
+      sendResponse({ ok: true });
+      break;
+    }
   }
 });
